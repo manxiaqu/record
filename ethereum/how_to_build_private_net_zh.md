@@ -1,6 +1,7 @@
 # 搭建以太坊私链/运行智能合约
 
-## 私链搭建（基于ubuntu，geth（以太坊go客户端））
+## 私链搭建（POW）（基于ubuntu，geth（以太坊go客户端））
+搭建以太坊私链基于POW共识
 
 ### 安装geth
 
@@ -194,6 +195,141 @@ admin.addPeer("enode://dc94b15145d84a73f399fd20b7a4cd60fcf7ec692d14459696a334d59
 正常情形下，两个节点应该正常通信。
 
 *两个节点需要能相互通信；节点必须使用同样的genesis.json文件初始化；命令行中networkid必须与genesis.json中一致。*
+
+## 私链搭建（POA）
+搭建基于POA共识的以太坊私链，下载安装过程同POW，区别主要为创世块及块生成方式不一致，*poa矿工没有奖励*
+
+### 生成创世块
+使用puppeth命令
+```bash
++-----------------------------------------------------------+
+| Welcome to puppeth, your Ethereum private network manager |
+|                                                           |
+| This tool lets you create a new Ethereum network down to  |
+| the genesis block, bootnodes, miners and ethstats servers |
+| without the hassle that it would normally entail.         |
+|                                                           |
+| Puppeth uses SSH to dial in to remote servers, and builds |
+| its network components out of Docker containers using the |
+| docker-compose toolset.                                   |
++-----------------------------------------------------------+
+
+Please specify a network name to administer (no spaces, please)
+> testPoa
+
+Sweet, you can set this via --network=testPoa next time!
+
+INFO [04-28|14:20:57] Administering Ethereum network           name=testPoa
+WARN [04-28|14:20:57] No previous configurations found         path=/home/ubuntu/.puppeth/testPoa
+
+What would you like to do? (default = stats)
+ 1. Show network stats
+ 2. Configure new genesis
+ 3. Track new remote server
+ 4. Deploy network components
+> 2
+
+Which consensus engine to use? (default = clique)
+ 1. Ethash - proof-of-work
+ 2. Clique - proof-of-authority
+> 2   // 选择使用Clique共识算法
+
+How many seconds should blocks take? (default = 15)
+> 3   // 多少时间生成一个块
+
+Which accounts are allowed to seal? (mandatory at least one)
+> 0x0127eb89ff5bdd96af11b7e4e01cda03f22b28e1               //允许挖矿的地址                                             
+> 0xf5c5c22ed599ede4973cb3f7b3681d9e71be34b8               //允许挖矿的地址
+> 0x
+
+Which accounts should be pre-funded? (advisable at least one)
+> 0xf5c5c22ed599ede4973cb3f7b3681d9e71be34b8
+> 0x
+
+Specify your chain/network ID if you want an explicit one (default = random)
+> 3000                
+INFO [04-28|14:22:21] Configured new genesis block 
+
+What would you like to do? (default = stats)
+ 1. Show network stats
+ 2. Manage existing genesis
+ 3. Track new remote server
+ 4. Deploy network components
+> 2
+
+ 1. Modify existing fork rules
+ 2. Export genesis configuration
+ 3. Remove genesis configuration
+> 2
+
+Which file to save the genesis into? (default = testPoa.json)
+> genesis_poa.json
+INFO [04-28|14:22:32] Exported existing genesis block 
+
+What would you like to do? (default = stats)
+ 1. Show network stats
+ 2. Manage existing genesis
+ 3. Track new remote server
+ 4. Deploy network components
+> ^C
+```
+生成的创世块[配置文件](./genesis_poa.json),注意：
+```bash
+"clique": {              //表明使用clique共识算法
+      "period": 3,      // 块生成时间间隔
+      "epoch": 30000
+}
+```
+启动节点可参考pow，基本一致。
+
+### 挖矿
+因为使用的是clique共识算法，所以挖矿时，必须对挖矿的账号进行解锁（需要进行签名）。并且只有
+签名的矿工个数>= N/2 + 1时，才能生成块，N为当前所有有权限挖矿的地址个数
+
+可以在geth的控制台中使用personal.unlockAccount(address, password, timeSecond)解锁账号。*过了timeSecond需重新解锁*
+或用命令行启动geth时，使用--unlock --password来解锁账户
+
+### 新授权/移除可挖矿地址
+
+clique.proposals(address, bool):当有>=N/2+1个地址通过提案后，该地址会被加入或移除
+address : 被提议矿工的地址  
+bool : false代表移除，true代表加入  
+
+clique.getSigners()：获取当前所有有权限挖矿的地址
+
+clique.getSignersAtHash() ： 获取对该块/tx进行签名的矿工
+
+
+## 以太坊geth常见参数详解
+
+* geth attach: 连接以太坊节点控制终端
+    + geth attach http://host:8545   //通过rpc连接控制终端
+    + geth attach geth.ipc // 通过unix socket文件连接控制终端
+* --datadir: 存储链数据目录
+* --networkid: 链id，使用私链需要特别指定，主网为1.
+* --cache: 缓存空间的大小
+* --unlock: 需要解锁的账户列表
+* --password: 存储密码的文件
+* --rpc: 开启rpc服务
+* --rpcaddr: 开启rpc服务的地址
+* --rpcport: 开启rpc服务的端口，默认为8545
+* --rpcapi: 开启的rpc服务种类
+* --ws: 开启web socket服务
+* --wsaddr: 开启web socket服务的地址
+* --wsport: 开启web socket服务的端口
+* --wsport: 开启的web socket服务的种类
+* --ipcdisable: 关闭ipc服务，unix socket连接//geth attach geth.ipc
+* --rpccorsdomain: 允许访问rpc服务的地址
+* --bootnode: 指定bootnode的值，会主动连接该节点
+* --port: 指定网络监听端口，默认30303
+* --maxpeer: 连接的最大节点数目
+* --nodiscover: 关闭p2p节点查找，即不会被其他节点发现
+* --mine: 开启挖矿
+* --minethreads: 用于挖矿的线程个数
+* --etherbase: 接收挖矿奖励的地址
+* --targetgaslimit： 挖矿时，块的gaslimit最大值
+* --gasprice： 接收交易的最小价格
+* --extradata：生成块时，放入的额外字节数据
 
 ## 发布智能合约（ethereumwallet/solcjs）
 
