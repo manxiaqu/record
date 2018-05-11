@@ -4,11 +4,11 @@
 ### 以太坊Hard Fork
 
 #### Homestead
-启用块高度：
+##### 启用块高度
 1. 主网： 1,150,000
 2. modern： 494,000
 
-版本更新内容：
+##### 版本更新内容
 1. [EIP2](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2.md),增加通过交易创建合约的gas消耗；
 任何交易签名中的s值大于secp256k1n/2被认为是不合法的；创建合约时，gas不够的话，交易会失败，而不是留下一个空合约；
 修改difficultly调整方式
@@ -16,20 +16,20 @@
 3. [EIP8](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-8.md),devp2p Wire Protocol的实现
 
 #### Tangerine Whistle
-启用块高度：
-主网： 2,463,000
+##### 启用块高度
+1. 主网： 2,463,000
 
-版本更新内容：
+##### 版本更新内容
 1. [EIP150](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-150.md), evm的opcodes从state
  tree中读取数据和其他的opcodes相关联（即读操作的opcodes可能受到其他opcodes的影响），解决方法是增加了读取操作的
  gas花费
  
 #### spurious dragon
-启用块高度：
+##### 启用块高度
 1. 主网：2,675,000块高度
 2. morden：1,885,000块高度
   
-版本更新的内容：
+##### 版本更新的内容
 1. [EIP155](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md)预防replay攻击：防止在以太坊某条链（测试链or私链）已经成功执行的交易重新在主链或其他
 链上进行广播、使用；如，你在morden测试链发送了100个eth给某人，在主链上不能重复执行该条交易。
 中提出了，对交易进行签名时，签名的参数中需要包含chainId，这样该条交易就无法在
@@ -42,11 +42,11 @@
 目前合约代码最大设置为24576个字节。如果创建的合约大小超过这个，则会弹出out of gas错误。
 
 #### Byzantium
-块启用高度：
+##### 块启用高度
 1. 主网： 4,370,000
 2. Ropsten： 1,700,000
 
-版本更新内容：
+##### 版本更新内容
 1. [EIP100](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-100.md)修改difficultly调整策略
 2. [EIP140](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-140.md)在evm中添加REVERT指令，
 可以在不需要消耗完所有gas的情况下，停止交易的执行，并且返回异常原因
