@@ -4,7 +4,7 @@
 
 #### 发送RawTransaction
 数据字段：    
-* nonce: 当前地址交易计数，从零开始，且只包含发送出去的交易  
+* nonce: 当前地址交易计数，从零开始，且只包含发送出去的交易(*可以用于预防重复消费，一个地址发出的交易nonce唯一*)  
 * gasPrice: gas价格，以wei为单位// 实际消耗的费用=gasPrice * gasUsed  
 * gasLimit: 该笔交易消耗gas上限  
 * from： 发出交易的地址 // web3j的rawTransaction没有此字段  
@@ -144,7 +144,3 @@ topics:[
 * totalDifficulty: 总难度
 * transactions: 该块所包含的交易，为交易的哈希数组
 * uncles: uncles的hash数组
-
-
-
-
