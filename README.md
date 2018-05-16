@@ -8,6 +8,8 @@
 * [pow 共识算法](./ethereum/pow_zh.md)  
 * [以太坊智能合约安全事件](./ethereum/security_incident_zh.md)
 * [tx,block等数据结构](./ethereum/data_structure.md)
+* [以太坊虚拟机(EVM)](./ethereum/evm_zh.md)
 
 # 声明
-欢迎指出错误及遗漏！
+1. 欢迎指出错误及遗漏！
+2. 如说明与官方文档有任何冲突，请以官方文档为准！

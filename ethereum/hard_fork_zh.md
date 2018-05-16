@@ -1,5 +1,5 @@
-# 以太坊安全
-以太坊重大版本更新（hard fork）
+# Hard Fork
+以太坊Hard Fork事件记录
 
 ### 以太坊Hard Fork
 
@@ -14,6 +14,13 @@
 修改difficultly调整方式
 2. [EIP7](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-7.md),添加一个新的opcode
 3. [EIP8](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-8.md),devp2p Wire Protocol的实现
+
+#### DAO Fork
+##### 启用块高度
+1. 主网高度：1,920,000
+
+##### 更新内容
+1. DAO fork，将原DAO中丢失的资金找回：将原DAO中所有用户的资金转移到一个特殊的合约中。
 
 #### Tangerine Whistle
 ##### 启用块高度
