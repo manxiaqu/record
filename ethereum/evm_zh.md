@@ -12,87 +12,96 @@ opcodes是以太坊中预先定义好的操作，智能合约编译的代码及�
 以下为opcodes操作表，参考[junm_table.go](https://github.com/ethereum/go-ethereum/blob/master/core/vm/jump_table.go)，
 对照代码得出，*源代码未有类似表格直接列出*。
 ```go
-// schema: [opcode, pop, push, gasUsed]
+// schema: [opcode, pop, push, gasUsed, halts, jumps, writes, valid, reverts, returns]
 
+halts   bool // 是否会停止之后的执行
+jumps   bool // pc计数器是否需要增长
+writes  bool // 是否会修改state
+valid   bool // 是否是合法的操作
+reverts bool // 是否会revert state会隐式地停止之后的操作
+returns bool // 是否会返回数据
+// 没有填写的均为false
 var opcodes = {
 	    // arithmetic
-        0x00: ["STOP", 0, 0, 0],
-        0x01: ["ADD", 2, 1, 3],
-        0x02: ["MUL", 2, 1, 5],
-        0x03: ["SUB", 2, 1, 3],
-        0x04: ["DIV", 2, 1, 5],
-        0x05: ["SDIV", 2, 1, 5],
-        0x06: ["MOD", 2, 1, 5],
-        0x07: ["SMOD", 2, 1, 5],
-        0x08: ["ADDMOD", 3, 1, 8],
-        0x09: ["MULMOD", 3, 1, 8],
-        0x0a: ["EXP", 2, 1, gasExp], // evm-tools中显示为10
-        0x0b: ["SIGNEXTEND", 2, 1, 5],
+        0x00: ["STOP", 0, 0, 0, halts: true, valid: true],    // 不对栈进行操作，停止执行代码
+        0x01: ["ADD", 2, 1, 3, valid: true],    // 取出栈顶两个元素x,*y（x表示pop，*y表示返回栈顶元素指针，以下均同此）,y = x + *y 
+        0x02: ["MUL", 2, 1, 5, valid: true],    // 取出栈顶两个元素x,y，push(x*y)
+        0x03: ["SUB", 2, 1, 3, valid: true],    // 取出栈顶两个元素x,*y，y = x - *y
+        0x04: ["DIV", 2, 1, 5, valid: true],    // 取出栈顶两个元素x，*y，y = x / *y
+        0x05: ["SDIV", 2, 1, 5, valid: true],   // x, y;TODO
+        0x06: ["MOD", 2, 1, 5, valid: true],    // x, y; push x % y
+        0x07: ["SMOD", 2, 1, 5, valid: true],   // TODO
+        0x08: ["ADDMOD", 3, 1, 8, valid: true], // x, y, z; push (x + y) % z
+        0x09: ["MULMOD", 3, 1, 8, valid: true], // x, y, z; push (x * y) % z
+        0x0a: ["EXP", 2, 1, gasExp, valid: true], // evm-tools中显示为10; x, y; push x ^ y
+        0x0b: ["SIGNEXTEND", 2, 1, 5, valid: true], // x; TODO
     
         // boolean
-        0x10: ["LT", 2, 1, 3],
-        0x11: ["GT", 2, 1, 3],
-        0x12: ["SLT", 2, 1, 3],
-        0x13: ["SGT", 2, 1, 3],
-        0x14: ["EQ", 2, 1, 3],
-        0x15: ["ISZERO", 1, 1, 3],
-        0x16: ["AND", 2, 1, 3],
-        0x17: ["OR", 2, 1, 3],
-        0x18: ["XOR", 2, 1, 3],
-        0x19: ["NOT", 1, 1, 3],
-        0x1a: ["BYTE", 2, 1, 3],
-        0x1b: ["SHL", 2, 1, 3],
+        0x10: ["LT", 2, 1, 3, valid: true],  // x, *y; if x < *y; *y = 1; else *y = 0;
+        0x11: ["GT", 2, 1, 3, valid: true],  // x, *y; if x > *y; *y = 1; else *y = 0;
+        0x12: ["SLT", 2, 1, 3, valid: true], // x, *y;TODO
+        0x13: ["SGT", 2, 1, 3, valid: true], // x, *y:TODO
+        0x14: ["EQ", 2, 1, 3, valid: true],  // x, *y; if x == *y *y = 1; else *y = 0;
+        0x15: ["ISZERO", 1, 1, 3, valid: true], // *x; if *x > 0 ; *x = 0; else *x = 1;
+        0x16: ["AND", 2, 1, 3, valid: true], // x, y; push x and y
+        0x17: ["OR", 2, 1, 3, valid: true], // x, *y; *y = x or *y
+        0x18: ["XOR", 2, 1, 3, valid: true], // x, *y; *y = x xor *y
+        0x19: ["NOT", 1, 1, 3, valid: true], // *x; *x = not *x
+        0x1a: ["BYTE", 2, 1, 3, valid: true], // x, *y; TODO
+        0x1b: ["SHL", 2, 1, 3], //
         0x1c: ["SHR", 2, 1, 3],
         0x1d: ["SAR", 2, 1, 3],
     
         // crypto
-        0x20: ["SHA3", 2, 1, gasSha3], // evm-tools中显示为30
+        0x20: ["SHA3", 2, 1, gasSha3, valid: true], // evm-tools中显示为30; x, y; data = memory(offset: x, size: y), push Hash(data)
         
         // contract context
-        0x30: ["ADDRESS", 0, 1, 2],
-        0x31: ["BALANCE", 1, 1, 400], // Homestead为20；EIP150/EIP158为400；
-        0x32: ["ORIGIN", 0, 1, 2],
-        0x33: ["CALLER", 0, 1, 2],
-        0x34: ["CALLVALUE", 0, 1, 2],
-        0x35: ["CALLDATALOAD", 1, 1, 3],
-        0x36: ["CALLDATASIZE", 0, 1, 2],
-        0x37: ["CALLDATACOPY", 3, 0, gasCallDataCopy], // evm-tools中显示为3
-        0x38: ["CODESIZE", 0, 1, 2],
-        0x39: ["CODECOPY", 3, 0, gasCodeCopy], // evm-tool中显示为3
-        0x3a: ["GASPRICE", 0, 1, 2],
-        0x3b: ["EXTCODESIZE", 1, 1, 700], // Homestead为20；EIP150/EIP158为700；
-        0x3c: ["EXTCODECOPY", 4, 0, gasExtCodeCopy], // evm-tools中显示为20
-        0x3d: ["RETURNDATASIZE", 0, 1, 2],
-        0x3f: ["RETURNDATACOPY", 3, 0, gasReturnDataCopy],
+        0x30: ["ADDRESS", 0, 1, 2, valid: true], // push contract.address
+        0x31: ["BALANCE", 1, 1, 400, valid: true], // Homestead为20；EIP150/EIP158为400； *x; *x = balance(*x);
+        0x32: ["ORIGIN", 0, 1, 2, valid: true], // push origin
+        0x33: ["CALLER", 0, 1, 2, valid: true], // push caller
+        0x34: ["CALLVALUE", 0, 1, 2, valid: true], // push contract.value
+        0x35: ["CALLDATALOAD", 1, 1, 3, valid: true], // x; inputData[x:x+32],inputData需先转为byte数组
+        0x36: ["CALLDATASIZE", 0, 1, 2, valid: true], // push input.length
+        0x37: ["CALLDATACOPY", 3, 0, gasCallDataCopy, valid: true], // evm-tools中显示为3; x, y, z;memory[x:x+z] = inputData[y:y+z]
+        0x38: ["CODESIZE", 0, 1, 2, valid: true], // push contract.code.length
+        0x39: ["CODECOPY", 3, 0, gasCodeCopy, valid: true], // evm-tool中显示为3; x, y, z;memory[x: x+z]=code[y:y+z]
+        0x3a: ["GASPRICE", 0, 1, 2, valid: true], // push gasPrice
+        0x3b: ["EXTCODESIZE", 1, 1, 700, valid: true], // Homestead为20；EIP150/EIP158为700；*x; *x = codesize(*x)
+        0x3c: ["EXTCODECOPY", 4, 0, gasExtCodeCopy, valid: true], // evm-tools中显示为20;x, y, z, g; memory[y:y+g] = code(x)[z:z+g]
+        0x3d: ["RETURNDATASIZE", 0, 1, 2, valid: true], // push len(returnData)
+        0x3f: ["RETURNDATACOPY", 3, 0, gasReturnDataCopy, valid: true],  // x, y, z; memeory[x:x+z] = returnData[y:y+z];
     
         // blockchain context
-        0x40: ["BLOCKHASH", 1, 1, 20],
-        0x41: ["COINBASE", 0, 1, 2],
-        0x42: ["TIMESTAMP", 0, 1, 2],
-        0x43: ["NUMBER", 0, 1, 2],
-        0x44: ["DIFFICULTY", 0, 1, 2],
-        0x45: ["GASLIMIT", 0, 1, 2],
+        0x40: ["BLOCKHASH", 1, 1, 20, valid: true], // x; push(hash(x));x必须在最近的257块之内
+        0x41: ["COINBASE", 0, 1, 2, valid: true], // push coinbase
+        0x42: ["TIMESTAMP", 0, 1, 2, valid: true], // push time
+        0x43: ["NUMBER", 0, 1, 2, valid: true], // push blockNumber
+        0x44: ["DIFFICULTY", 0, 1, 2, valid: true], // push difficulty
+        0x45: ["GASLIMIT", 0, 1, 2, valid: true], // push gasLimit
       
         // storage and execution
-        0x50: ["POP", 1, 0, 2],
-        0x51: ["MLOAD", 1, 1, gasMLoad], // evm-tools中显示为3
-        0x52: ["MSTORE", 2, 0, gasMStore], // evm-tools中显示为3
-        0x53: ["MSTORE8", 2, 0, gasMStore8], // evm-tools中显示为3
-        0x54: ["SLOAD", 1, 1, 200], // Homestead为50；EIP150/EIP158为200；
-        0x55: ["SSTORE", 2, 0, gasSStore], // evm-tools中显示为0
-        0x56: ["JUMP", 1, 0, 8],
-        0x57: ["JUMPI", 2, 0, 10],
-        0x58: ["PC", 0, 1, 2],
-        0x59: ["MSIZE", 0, 1, 2],
-        0x5a: ["GAS", 0, 1, 2],
-        0x5b: ["JUMPDEST", 0, 0, 1],
+        0x50: ["POP", 1, 0, 2, valid: true], // x;
+        0x51: ["MLOAD", 1, 1, gasMLoad, valid: true], // evm-tools中显示为3; x; push memory[x:x+32]
+        0x52: ["MSTORE", 2, 0, gasMStore, valid: true], // evm-tools中显示为3; x, y; memory[x:x+32] = y;
+        0x53: ["MSTORE8", 2, 0, gasMStore8, valid: true], // evm-tools中显示为3; x, y; memory[x] = y;
+        0x54: ["SLOAD", 1, 1, 200, valid: true], // Homestead为50；EIP150/EIP158为200； x; push( stateOf(hash(x)) );
+        0x55: ["SSTORE", 2, 0, gasSStore, writes: true, valid: true], // evm-tools中显示为0; x, y; setState(hash(x), hash(y));
+        0x56: ["JUMP", 1, 0, 8, jumps: true, valid: true], // pos; pc = pos;
+        0x57: ["JUMPI", 2, 0, 10, valid: true], // pos, cond; if cond != 0 pc = pos; else pc++;
+        0x58: ["PC", 0, 1, 2, valid: true], // push pc;
+        0x59: ["MSIZE", 0, 1, 2, valid: true], // push memory.length
+        0x5a: ["GAS", 0, 1, 2, valid: true], // push contract.gas
+        0x5b: ["JUMPDEST", 0, 0, 1, valid: true], // do nothing
     
         // logging
-        0xa0: ["LOG0", 2, 0, makeGasLog(0)], // evm-tools中显示为375
-        0xa1: ["LOG1", 3, 0, makeGasLog(1)], // evm-tools中显示为750
-        0xa2: ["LOG2", 4, 0, makeGasLog(2)], // evm-tools中显示为1125
-        0xa3: ["LOG3", 5, 0, makeGasLog(3)], // evm-tools中显示为1500
-        0xa4: ["LOG4", 6, 0, makeGasLog(4)], // evm-tools中显示为1875
+        0xa0: ["LOG0", 2, 0, makeGasLog(0), writes: true, valid: true], // evm-tools中显示为375
+        0xa1: ["LOG1", 3, 0, makeGasLog(1), writes: true, valid: true], // evm-tools中显示为750
+        0xa2: ["LOG2", 4, 0, makeGasLog(2), writes: true, valid: true], // evm-tools中显示为1125
+        0xa3: ["LOG3", 5, 0, makeGasLog(3), writes: true, valid: true], // evm-tools中显示为1500
+        0xa4: ["LOG4", 6, 0, makeGasLog(4), writes: true, valid: true], // evm-tools中显示为1875
+        // makeGasLog(size)
+        // mStart, mSize; for i:=0; i<size; i++ { topics[i]=stack.pop } log.topics = topics; log.data = memory[mStart:mSize];
         
         // unofficial opcodes used for parsing
         0xb0: ["PUSH"],
@@ -100,34 +109,34 @@ var opcodes = {
         0xb2: ["SWAP"],
         
         // closures
-        0xf0: ["CREATE", 3, 1, gasCreate32000],
-        0xf1: ["CALL", 7, 1, gasCall40],
-        0xf2: ["CALLCODE", 7, 1, gasCallCode40],
-        0xf3: ["RETURN", 2, 0, gasReturn0],
-        0xf4: ["DELEGATECALL", 6, 1, gasDelegateCall],
+        0xf0: ["CREATE", 3, 1, gasCreate32000, writes: true, valid: true, returns: true], // vlaue, offset, size; input = memory[offset:offset+size]; createContract
+        0xf1: ["CALL", 7, 1, gasCall40, valid: true, returns: true], // _, addr, value, inOffset, inSize, retOffset, retSize; call;
+        0xf2: ["CALLCODE", 7, 1, gasCallCode40, valid: true, returns: true], // _, addr, value, inOffset, inSize, retOffset, retSize; callCode;
+        0xf3: ["RETURN", 2, 0, gasReturn0, halts: true, valid: true, returns: ], // offset, size; return memory[offset:offset+size]
+        0xf4: ["DELEGATECALL", 6, 1, gasDelegateCall, valid: true, returns: true], // _, addr, inOffset, inSize, retOffset, retSize; delegateCall;
         
-        0xfa: ["STATICCALL", 6, 1, gasStaticCall],
-        0xfd: ["REVERT", 2, 0, gasRevert],
-        0xff: ["SELFDESTRUCT", 1, 0, gasSuicide], 
+        0xfa: ["STATICCALL", 6, 1, gasStaticCall, valid: true, returns: true], // _, addr, inOffset, inSize, retOffset, retSize; staticCall;
+        0xfd: ["REVERT", 2, 0, gasRevert ,valid: true, returns: true, reverts: true], // offset, size; return memory[offset:offset+size]
+        0xff: ["SELFDESTRUCT", 1, 0, gasSuicide, halts: true, writes: true, valid: true], // x; addBalance(hash(x), contract.balance) 
     	
         // arbitrary length storage (proposal for metropolis hardfork)
-        0xe1: ["SLOADBYTES", 3, 0, 50],
-        0xe2: ["SSTOREBYTES", 3, 0, 0],
-        0xe3: ["SSIZE", 1, 1, 50],
+        0xe1: ["SLOADBYTES", 3, 0, 50], // not use now
+        0xe2: ["SSTOREBYTES", 3, 0, 0], // not use now
+        0xe3: ["SSIZE", 1, 1, 50], // not use now
 }
 
 // i 代表是一个字节个数，如PUSH1代表压入1个单字节的数，PUSH2代表压入一个双字节的数，下面同此。
 for i := 1; i <= 32; i++ {
-    opcodes[0x60 + i - 1] = ["PUSH" + string(i), 0, 1, 3];
+    opcodes[0x60 + i - 1] = ["PUSH" + string(i), 0, 1, 3]; // push x;
 }
 
 for i := 1; i <= 16; i++ {
-    opcodes[0x80 + i - 1] = ["DUP" + string(i), i, i+1, 3]
-    opcodes[0x90 + i - 1] = ["SWP" + string(i), i+1, i+1, 3]
+    opcodes[0x80 + i - 1] = ["DUP" + string(i), i, i+1, 3] // push stack[stack.len - i];
+    opcodes[0x90 + i - 1] = ["SWP" + string(i), i+1, i+1, 3] // stack[stack.len - (i + 1)], stack[stack.len - 1] = stack[stack.len - 1], stack[stack.len - (i + 1)]
 }
 ```
 
-上面的表格中列出了当前所有的opcode，并列出了操作需要从栈中取出/放入多少个参数和相应需要消耗的gas数量。
+上面的表格中列出了当前所有的opcode，并列出了操作需要从栈中取出/放入多少个参数和相应需要消耗的gas数量及对应的具体操作。
 
 ### EVM限制
 EVM对执行的代码和使用的栈进行了一些限制，包括：
@@ -1610,21 +1619,68 @@ Stack:
 00000005  00000000000000000000000000000000000000000000000000000000000000bd
 00000006  00000000000000000000000000000000000000000000000000000000a9059cbb
 
-000237: MSTORE
-000238: PUSH1 0x20
-000240: DUP2
-000241: SWAP1
+000237: MSTORE  // 将数据存储入栈：将msg.sender放入到memory的0x00位置上,占用32个byte
+000238: PUSH1 0x20 // 将0x20压入栈
+000240: DUP2  // 将栈顶底层元素复制后，压入栈
+000241: SWAP1 // 将栈顶两个元素进行交换
+此时栈/内存为：
+Stack:
+00000000  0000000000000000000000000000000000000000000000000000000000000020
+00000001  0000000000000000000000000000000000000000000000000000000000000000
+00000002  0000000000000000000000000000000000000000000000000000000000000000
+00000003  000000000000000000000000000000000000000000000000000000003b9aca00
+00000004  0000000000000000000000001e8676d4d86ac62dc63af85a5ab86567de32a9fb
+00000005  00000000000000000000000000000000000000000000000000000000000000bd
+00000006  00000000000000000000000000000000000000000000000000000000a9059cbb
+Memory:
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 73 65 6e 64 65 72  |..........sender|
+00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000040  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000050  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 60  |...............`|
 
+000242: MSTORE       // 将数据存入内存，从0x20位置开始
+000243: PUSH1 0x40   // 将0x40压入栈
+000245: SWAP1        // 将栈顶两个元素进行交换
+000246: SHA3         // 取出栈顶两个元素（offset，size），从内存中取出数据，进行sha3算法，并将结果压入栈
+此时栈为：
+Stack:
+00000000  3f8de4d44efdda602ff1ce233b048a7127f18ebd758b8735f2c82686a70585df
+00000001  000000000000000000000000000000000000000000000000000000003b9aca00
+00000002  0000000000000000000000001e8676d4d86ac62dc63af85a5ab86567de32a9fb
+00000003  00000000000000000000000000000000000000000000000000000000000000bd
+00000004  00000000000000000000000000000000000000000000000000000000a9059cbb
+Memory:
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 73 65 6e 64 65 72  |..........sender|
+00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000040  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000050  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 60  |...............`|
 
+000247: SLOAD        // 取出hash，并通过stateDB获取该hash对应存储的值并压入栈
+000248: DUP2         // 将栈顶底层元素复制后，压入栈
+000249: SWAP1        // 将栈顶两个元素交换
+000250: LT           // 比较栈顶两个元素大小，并将结果写回栈
+000251: ISZERO       // 判断栈顶元素是否为0
+000252: PUSH2 0x0104 // 将0x0104压入栈
+此时栈为：
+Stack:
+00000000  0000000000000000000000000000000000000000000000000000000000000104
+00000001  0000000000000000000000000000000000000000000000000000000000000000
+00000002  000000000000000000000000000000000000000000000000000000003b9aca00
+00000003  0000000000000000000000001e8676d4d86ac62dc63af85a5ab86567de32a9fb
+00000004  00000000000000000000000000000000000000000000000000000000000000bd
+00000005  00000000000000000000000000000000000000000000000000000000a9059cbb
 
-
-
-
-
+000255: JUMPI        // 判断是否需要进行跳转，无需跳转
+000256: PUSH1 0x00   // 将0x00压入栈
+000258: DUP1         // 复制栈顶元素压入栈
+000259: REVERT       // 
 ```
 
-
-
+至此一个完整的接口调用已经结束，因为msg.sender中没有足够的balance，所以该方法失败了。
 
 ### 参考
 1. [以太坊黄皮书](https://github.com/ethereum/yellowpaper)
