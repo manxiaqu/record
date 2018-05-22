@@ -55,7 +55,8 @@ var (
 上述的ErrNonceTooLow、ErrInsufficientFunds等均是根据当前节点的本地数据进行计算的，即如果接收该
 交易的节点(rpc调用的节点)并没有同步到最新状态，可能会判断错误或发出不会成功的交易。
 
-###　txpool
+###　 txpool
+
 txpool中含以下交易列表：  
 1. pending txlist：当前正在处理的交易池，`map[address]tx`;
 2. queue txlist：正在排队的交易池（没有进行处理），`map[address]tx`;
