@@ -29,6 +29,20 @@
 * [Gatekeep two](./ethernaut/14_Gatekeep_two_zh.md)
 * [Naught Coin](./ethernaut/15_Naught_Coin_zh.md)
 
+# 各类资料收集(原链接)
+在网上收集的各类资料原文链接
+
+## 以太坊
+* [POA 协议](https://github.com/ethereum/EIPs/issues/225)
+* [Read Storage At Ethereum Contract](https://medium.com/aigang-network/how-to-read-ethereum-contract-storage-44252c8af925)
+* [Ethereum Libraries](https://github.com/Modular-Network/ethereum-libraries)
+* [安全编写合约](https://github.com/ConsenSys/smart-contract-best-practices/blob/master/README-zh.md)
+* [Geth 快同步的细节](https://github.com/ethereum/go-ethereum/issues/15001)
+* [Infura以太坊免费节点](https://infura.io)
+* [以太坊浏览器](https://etherscan.io)
+* [搭建POA私链](https://hackernoon.com/setup-your-own-private-proof-of-authority-ethereum-network-with-geth-9a0a3750cda8)
+* [以太坊合约安全WIKI](https://github.com/ethereum/wiki/wiki/Safety)
+
 # 声明
 1. 欢迎指出错误及遗漏！
 2. 如说明与官方文档有任何冲突，请以官方文档为准！
