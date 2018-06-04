@@ -7,7 +7,7 @@ Solidity中向某个地址发送eth的方法及异同之处
 会自动失败，状态会进行回滚. *transfer的gas数量只有2300，如果address是合约且需要进行复杂的操作则会失败*
 
 # Send
-*该方法目前已被启用，现在基本使用transfer来代替*。使用`address.send(value)`向某个地址发送eth，它的gas数量也
+*该方法目前已被弃用，现在基本使用transfer来代替*。使用`address.send(value)`向某个地址发送eth，它的gas数量也
 为2300和transfer不同的是，它执行失败时，会返回false，但是不会抛出异常。类似于`require(address.send(amount))`
 
 # Call
