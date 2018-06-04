@@ -11,6 +11,9 @@
 * [以太坊虚拟机(EVM)](./ethereum/evm_zh.md)
 * [txpool交易池](./ethereum/txpool_zh.md)
 
+# Solidity
+* [向其他地址/合约发送eth](./solidity/send_eth_zh.md)
+
 # Ethernaut游戏
 * [Hello Ethernaut](./ethernaut/0_Hello_Ethernaut_zh.md)
 * [Fallback](./ethernaut/1_Fallback_zh.md)
@@ -42,6 +45,12 @@
 * [以太坊浏览器](https://etherscan.io)
 * [搭建POA私链](https://hackernoon.com/setup-your-own-private-proof-of-authority-ethereum-network-with-geth-9a0a3750cda8)
 * [以太坊合约安全WIKI](https://github.com/ethereum/wiki/wiki/Safety)
+* [以太坊分片技术](https://blockgeeks.com/guides/what-are-ethereum-nodes-and-sharding/)
+* [以太坊分片技术实现细节](https://github.com/ethereum/sharding/blob/develop/docs/doc.md)
+
+## 硬钱包
+* [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+* [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
 
 # 声明
 1. 欢迎指出错误及遗漏！
