@@ -43,7 +43,7 @@ function() public {
   }
 ```
 fallback函数使用了delegatecall，该调用不会修改state为Delegation的storage而不是Delegate的storage。可参照
-[]()查看以太坊call的相关区别
+[网上的说明](https://ethereum.stackexchange.com/questions/3667/difference-between-call-callcode-and-delegatecall)查看以太坊call的相关区别
 
 ### 攻击方法
 1. 向合约地址发送一条交易，并且msg.data为bytes4(keccak256("pwn()"))，该字符串可以通过web3.sha3("pwn()")

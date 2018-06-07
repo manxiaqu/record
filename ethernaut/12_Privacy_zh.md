@@ -34,9 +34,10 @@ contract Privacy {
 ```
 
 ### 代码分析
-只要传入正确的key后，即可解锁账号；需要通过分析storage来获取data的具体数据。  
+只要传入正确的key后，即可解锁账号；需要通过分析storage来获取data的具体数据，可以通过eth.getStorageAt(address, index)
+来获取storage的具体类型。  
 例如：  
-instance：0x7ecbfb9ef1497373de4fc8ecb84801bea9f6e872
+instance：0x7ecbfb9ef1497373de4fc8ecb84801bea9f6e872（在ropsten测试链上）
 storage[0]:0x0000000000000000000000000000000000000000000000000000007d00ff0a00
 storage[1]:0x8e7cd92580800357d3a6f7c90a899a674ba3301ec216e1ff0cf7146d11c3126a
 storage[2]:0xb0843069456c2e4da3fbfed16c35ad1c4f5658e9da1d13018db91025716a75fe

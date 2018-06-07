@@ -35,7 +35,7 @@
 # 各类资料收集(原链接)
 在网上收集的各类资料原文链接
 
-## 以太坊
+### 以太坊
 * [POA 协议](https://github.com/ethereum/EIPs/issues/225)
 * [Read Storage At Ethereum Contract](https://medium.com/aigang-network/how-to-read-ethereum-contract-storage-44252c8af925)
 * [Ethereum Libraries](https://github.com/Modular-Network/ethereum-libraries)
@@ -48,10 +48,12 @@
 * [以太坊分片技术](https://blockgeeks.com/guides/what-are-ethereum-nodes-and-sharding/)
 * [以太坊分片技术实现细节](https://github.com/ethereum/sharding/blob/develop/docs/doc.md)
 
-## 硬钱包
+### 硬钱包
 * [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 * [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
 
 # 声明
 1. 欢迎指出错误及遗漏！
 2. 如说明与官方文档有任何冲突，请以官方文档为准！
+
+PS：如果对哪方面资料有需求的也可以提issue，有时间会补上。

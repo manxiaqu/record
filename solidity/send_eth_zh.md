@@ -1,5 +1,5 @@
 # How To Send Ether To Other Address On Contract
-Solidity中向某个地址发送eth的方法及异同之处
+Solidity中向某个地址发送eth或者调用其他合约接口的异同之处
 
 # Transfer
 这个是比较常用的转账方法，直接使用`address.transfer(value)`就可以向某个地址完成转账操作。在合约中调用该方法
@@ -15,3 +15,17 @@ Solidity中向某个地址发送eth的方法及异同之处
 可以指定gas的上限（默认为所有剩余的gas），value指定需要发送的ether的数量，当执行失败时，会返回false  
 可以使用`address.call.gas().value()(bytes4(keccak256("someFun(uint256...)")), params)`，someFun(uint256...)为调用的
 方法，如transfer(address,uint256)，param为相应的参数值;该方法与`SomeContract.someFund.gas().value()`效果一致。
+
+# DelegateCall
+如：
+```solidity
+contract Test {
+    function delegateCallOther(address contractB) public {
+        contractB.delegateCall(msg.data);
+    }
+}
+```
+该代码调用DelegateCall时，contractB中的数据不会有所变化，而会将相应的变化应用到Test合约中。msg.sender
+,也还是当初调用Test的人，不会变为Test合约的地址。  
+DelegateCall和callCode基本一致，但是callCode的msg.sender会变化（目前callCode基本使用较少，之后可以会移除）。
+delegateCall主要用于library的形式。
