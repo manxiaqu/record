@@ -2,10 +2,51 @@
 POA共识算法详解
 
 # 简介
-POA是一个基于许可的共识，只有经过认证的地址才能进行挖矿生成块（没有块奖励）；认证的地址可以通过协议
+POA是一个基于许可的共识算法，只有经过认证的地址(signer)才能进行挖矿生成块（没有块奖励）；认证的地址可以通过协议进行
 动态增减
 
-#　参数介绍
+# 共识引擎接口
+1. Author: 返回生成当前块的地址，使用poa时，该地址与coinbase地址不同
+2. VerifyHeader:验证块头部
+3. VerifyHeaders:验证多个块头部
+4. VerifyUncles:验证uncle块
+5. VerifySeal:验证seal是否符合共识算法
+6. Prepare:对block的头部进行初始化
+6. Finalize:生成最后的块，同时对state进行修改，有块奖励的话，是在此阶段给的。
+7. Seal:生成一个块
+8. CalcDifficulty:计算块的难度，在poa中有特殊的意义
+9. APIs:共识算法支持的api接口
+
+## 矿工挖矿流程
+1. 调用miner.start()开始挖矿
+2. 为txpool设置gasprice
+3. 获取etherbase，如果没有，则返回错误，如果为Clique共识算法，还需要在keystore中找寻etherbase地址，并将其设置为Clique的signer
+4. 开启线程进行挖矿
+5. 如果当前节点未同步完，则需等待同步完成后开始挖矿
+6. worker.start()进入挖矿主循环，等待channel消息
+    1. 收到work消息，调用共识引擎Seal生成新的块
+    2. 收到quit消息，退出循环
+7. 提交新的work，commitNewWork
+    1. 设置新的块的头部参数，计算gasLimit
+    2. 调用共识算法的Prepare()方法，对头部参数进行初始化
+    3. 获取txpool中的pending交易，并对其按照price和nonce进行排序
+    4. 将排序后的交易提交
+        1. 依次对交易进行处理（参数校验、签名验证、nonce判断等）
+        2. 对state进行修改，如果交易发送错误，会回滚操作，生成receipt
+    5. 计算可能的uncle块
+    6. 调用共识算法Finalize生成新的块
+    7. 提交该工作，通过channel将该工作提交给6中主循环。
+    
+    
+## gasLimit计算
+根据父块的使用的gasUsed计算出当前块的gasLimit，这是一个矿工的策略，并不是共识的策略。
+
+1. 计算出应该设置的gasLimit（如果父块使用的gas大于父块gasLimit*2/3，则增加gasLimit，否则减少gas或者不变）
+    1. gasLimit=parent.gasLimit + (parent.gasUsed * 1.5 - parent.gasLimit） / 1024 + 1
+2. limit不能小于最小值5000
+3. 如果设置了TargetGasLimit，并且limit小于TargetGasLimit时，gasLimit = parent.gasLimit + parent.gasLimit/1024 - 1（不能大于目标值）
+
+# 参数介绍
 1. EPOCH_LENGTH: 经过多少个块后，设置检查点
 2. BLOCK_PERIOD: 平均出块时间
 3. EXTRA_VANITY： 在extra-data字段的头部数据中，为signer vanity留出的固定字节的数量 
@@ -13,13 +54,14 @@ POA是一个基于许可的共识，只有经过认证的地址才能进行挖�
 5. NONCE_AUTH： 添加一个新的signer时，将nonce设置为"0xffffffffffffffff"
 6. NONCE_DROP: 删除一个signer时，将nonce设置为"0x0000000000000000"
 7. UNCLE_HASH: uncle hash，值为Keccak256(RLP([]))，因为在poa中，uncle没有任何意义
-8. DIFF_NOTURN：使用block中的difficulty字段，1代表outturn：代表顺序，当前的块应该有另外一个signer进行签名，但是
+8. DIFF_NOTURN：使用block中的difficulty字段，1代表outturn：代表当前块按照顺序应该由另外一个人来进行签名。
 9. DIFF_INTURN：使用block中的difficulty字段，2代表inturn：表示按照顺序，该块应该由当前的signer进行签名。
 10. SIGNER_COUNT：在一个特定的时间点，链中合法的signer个数
 11. SIGNER_INDEX：合法signer的索引
-12. SIGNER_LIMIT：
+12. SIGNER_LIMIT：同一signer生成两个块之间最少的块间隔数量。如共5个signer，该数字为3，即每个地址在签名后，到下一次签名之间，必须由
+其他signer签署3个块
 
-# 块header结构
+# header结构
 1. difficulty：1代表：；2代表
 2. extraData：额外数据，含signer的签名数据
 3. gasLimit：当前块的gas限制，同pow
@@ -42,10 +84,104 @@ POA是一个基于许可的共识，只有经过认证的地址才能进行挖�
 19. transactionsRoot：同pow
 20. uncles：应该始终为空数组[]
 
-# POA出块流程
-POA的块是由signer轮流进行签名的
+# POA出块
+POA的块是由signer轮流进行签名的，但是当系统中有一半以上的signer不进行挖矿后，整个链就不能正常工作，必须要保证挖矿的signer人数>=总signer/2+1
 
-1. 尝试生成新的块，调用Seal接口
+1. Prepare阶段，初始化块头部的各项参数
+    1. 当不处于检查点时（检查点blockNumber%Epoch==0），如果当前有投票，则对投票进行处理
+        1. 对当前所有的投票进行合法性检验
+        2. 若当前自己节点有投票，则将coinbase设置为被投票的地址，并且将投票结果写入nonce
+    2. 计算Difficulty
+        1. in-turn则为2；根据当前signer的数量，当offset = blockNumber%len(signers);signers[offset]==当前signer时，为in-turn
+        否则为no-turn
+        2. no-turn(out-of-turn)则为1
+    3. 设置extra数据，格式如上述所述（POW中，该字段可由miner进行设置）
+    4. 设置块时间，块时间=父块时间+出块间隔，如果小于当前时间，则设为当前时间
+```go
+func (c *Clique) Prepare(chain consensus.ChainReader, header *types.Header) error {
+	// If the block isn't a checkpoint, cast a random vote (good enough for now)
+	header.Coinbase = common.Address{}
+	header.Nonce = types.BlockNonce{}
+
+	number := header.Number.Uint64()
+	// Assemble the voting snapshot to check which votes make sense
+	snap, err := c.snapshot(chain, number-1, header.ParentHash, nil)
+	if err != nil {
+		return err
+	}
+	if number%c.config.Epoch != 0 {
+		c.lock.RLock()
+
+		// Gather all the proposals that make sense voting on
+		addresses := make([]common.Address, 0, len(c.proposals))
+		for address, authorize := range c.proposals {
+			if snap.validVote(address, authorize) {
+				addresses = append(addresses, address)
+			}
+		}
+		// If there's pending proposals, cast a vote on them
+		if len(addresses) > 0 {
+			header.Coinbase = addresses[rand.Intn(len(addresses))]
+			if c.proposals[header.Coinbase] {
+				copy(header.Nonce[:], nonceAuthVote)
+			} else {
+				copy(header.Nonce[:], nonceDropVote)
+			}
+		}
+		c.lock.RUnlock()
+	}
+	// Set the correct difficulty
+	header.Difficulty = CalcDifficulty(snap, c.signer)
+
+	// Ensure the extra data has all it's components
+	if len(header.Extra) < extraVanity {
+		header.Extra = append(header.Extra, bytes.Repeat([]byte{0x00}, extraVanity-len(header.Extra))...)
+	}
+	header.Extra = header.Extra[:extraVanity]
+
+	if number%c.config.Epoch == 0 {
+		for _, signer := range snap.signers() {
+			header.Extra = append(header.Extra, signer[:]...)
+		}
+	}
+	header.Extra = append(header.Extra, make([]byte, extraSeal)...)
+
+	// Mix digest is reserved for now, set to empty
+	header.MixDigest = common.Hash{}
+
+	// Ensure the timestamp has the correct delay
+	parent := chain.GetHeader(header.ParentHash, number-1)
+	if parent == nil {
+		return consensus.ErrUnknownAncestor
+	}
+	header.Time = new(big.Int).Add(parent.Time, new(big.Int).SetUint64(c.config.Period))
+	if header.Time.Int64() < time.Now().Unix() {
+		header.Time = big.NewInt(time.Now().Unix())
+	}
+	return nil
+}
+```
+
+2. 调用Finalize
+    1. 设置uncle为[]；并且没有块奖励
+```go
+func (c *Clique) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
+	// No block rewards in PoA, so the state remains as is and uncles are dropped
+	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
+	header.UncleHash = types.CalcUncleHash(nil)
+
+	// Assemble and return the final block for sealing
+	return types.NewBlock(header, txs, nil, receipts), nil
+}
+```
+
+3. 调用Seal
+    1. 对于period为0的链，不允许生成空块
+    2. 验证当前signer是否为合法的signer
+    3. 如果当前signer在最近已经对块进行了签名（最近的limit=signer/2+1个块中有该signer签名的块，相关信息保存在Recents中），則終止此次出块操作；
+    4. 如果当前的signer为out-of-turn，代表应该由另外一个signer进行签名，则等待一定时间(limit*500毫秒)后在生成本块。（该signer未在最近的limit个块中签名）
+    5. 如果当前的signer为in-turn，则等待blockNumber.timestamp-now后对块进行签名（blockNumber.timestamp在prepare中计算得到，大概率大于当前时间），生成块。
+
 ```go
 func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, stop <-chan struct{}) (*types.Block, error) {
 	header := block.Header()
@@ -109,7 +245,12 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, stop <-ch
 	return block.WithSeal(header), nil
 }
 ```
-* 对于period为0的链，不允许生成空块
-* 获取上个块的快照，仅允许授权的用户生成块
-* 
+注意，在Prepare和Seal阶段，均调用了snapshot方法，该方法会apply方法，根据当前头部的信息，计算vote的情况，
+并进行相应的更新，如果某个节点加入/剔除出列表投票通过后，则更新signers列表
+
+# POA投票
+* signer调用Propose(address, auth)，发起对某个地址的投票，auth为false代表将该地址移除，auth为true代表将某个
+地址加入
+* 不要尝试添加已有的地址
+* 投票的情况会记录到块头部，并依此更新内存中的snapshot（在块为0或者内部检查点时(1024块间隔)，会将数据保存至disk）
 
