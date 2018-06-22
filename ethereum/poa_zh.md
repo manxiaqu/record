@@ -251,6 +251,10 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, stop <-ch
 # POA投票
 * signer调用Propose(address, auth)，发起对某个地址的投票，auth为false代表将该地址移除，auth为true代表将某个
 地址加入
-* 不要尝试添加已有的地址
+* 不要尝试添加已有的地址，添加已有的地址，或者是删除不是singer的地址均属于不合法的投票，在实际进行投票计算时，不会将
+该部分的投票计算入内。
+* poa并没有对signer的投票地址进行限制，即你可以给自己投票，但是结果需要统计所有人的投票才能得出
+* 投票后的propose并不是直接被删除，如果没有使用discard或停止/重启节点，该部分数据会一直在内存中
+* 当signer只有一个时，signer可以自己将自己投票出去，使signer长度为0，此时系统会panic
 * 投票的情况会记录到块头部，并依此更新内存中的snapshot（在块为0或者内部检查点时(1024块间隔)，会将数据保存至disk）
 
