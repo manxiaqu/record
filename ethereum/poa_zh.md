@@ -119,11 +119,13 @@ func (c *Clique) Prepare(chain consensus.ChainReader, header *types.Header) erro
 		// Gather all the proposals that make sense voting on
 		addresses := make([]common.Address, 0, len(c.proposals))
 		for address, authorize := range c.proposals {
+		    // 添加已经有的地址和移除不是signer的地址是非法的
 			if snap.validVote(address, authorize) {
 				addresses = append(addresses, address)
 			}
 		}
 		// If there's pending proposals, cast a vote on them
+		// 从当前的proposals中随机选取投票，将其投票写入块头部
 		if len(addresses) > 0 {
 			header.Coinbase = addresses[rand.Intn(len(addresses))]
 			if c.proposals[header.Coinbase] {
@@ -228,6 +230,8 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, stop <-ch
 	if header.Difficulty.Cmp(diffNoTurn) == 0 {
 		// It's not our turn explicitly to sign, delay it a bit
 		wiggle := time.Duration(len(snap.Signers)/2+1) * wiggleTime
+		// 注意该步骤使用了rand函数，即其随机等待0-delay之间的时间后，生成该块，在signer比较多的时候，能够在一定
+		// 程度上保证出块速率，但是也可能造成链的reorg情况比较多（自动切换到链难度最高的链）
 		delay += time.Duration(rand.Int63n(int64(wiggle)))
 
 		log.Trace("Out-of-turn signing requested", "wiggle", common.PrettyDuration(wiggle))
@@ -261,4 +265,12 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, stop <-ch
 * 投票后的propose并不是直接被删除，如果没有使用discard或停止/重启节点，该部分数据会一直在内存中
 * 当signer只有一个时，signer可以自己将自己投票出去，使signer长度为0，此时系统会panic
 * 投票的情况会记录到块头部，并依此更新内存中的snapshot，所以当前的signer信息是保存在内存中的（在块为0或者内部检查点时(1024块间隔)，会将数据保存至disk）
+
+## POA clique api
+
+* clique.propose(address, auth)
+    * clique.propose(0x281055Afc982d96fAB65b3a49cAc8b878184Cb16, true): 提议添加0x281055Afc982d96fAB65b3a49cAc8b878184Cb16为signer
+    * clique.propose(0x281055Afc982d96fAB65b3a49cAc8b878184Cb16, false): 提议将0x281055Afc982d96fAB65b3a49cAc8b878184Cb16从signer中移除
+    *如果没有使用clique.discard(address)，那么这个propose会一致存在内存中，miner每次生成块的时候，都会将该propose添加到块中
+    
 
