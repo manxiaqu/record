@@ -6,7 +6,7 @@ POA是一个基于许可的共识算法，只有经过认证的地址(signer)才
 动态增减
 
 # 共识引擎接口
-1. Author: 返回生成当前块的地址，使用poa时，该地址与coinbase地址不同
+1. Author: 返回生成当前块的地址，默认会使用当前的第一个账号
 2. VerifyHeader:验证块头部
 3. VerifyHeaders:验证多个块头部
 4. VerifyUncles:验证uncle块
@@ -47,10 +47,10 @@ POA是一个基于许可的共识算法，只有经过认证的地址(signer)才
 3. 如果设置了TargetGasLimit，并且limit小于TargetGasLimit时，gasLimit = parent.gasLimit + parent.gasLimit/1024 - 1（不能大于目标值）
 
 # 参数介绍
-1. EPOCH_LENGTH: 经过多少个块后，设置检查点
+1. EPOCH_LENGTH: 经过多少个块后，设置检查点；检查点之前的数据无法修改
 2. BLOCK_PERIOD: 平均出块时间
-3. EXTRA_VANITY： 在extra-data字段的头部数据中，为signer vanity留出的固定字节的数量 
-4. EXTRA_SEAL： 在extra-data字段的尾部数据中，为signer seal留出的固定字节的数量
+3. EXTRA_VANITY： 在extra-data字段的头部数据中，miner设置的自定义数据 
+4. EXTRA_SEAL： 在extra-data字段的尾部数据中，signer签名数据
 5. NONCE_AUTH： 添加一个新的signer时，将nonce设置为"0xffffffffffffffff"
 6. NONCE_DROP: 删除一个signer时，将nonce设置为"0x0000000000000000"
 7. UNCLE_HASH: uncle hash，值为Keccak256(RLP([]))，因为在poa中，uncle没有任何意义
@@ -62,8 +62,12 @@ POA是一个基于许可的共识算法，只有经过认证的地址(signer)才
 其他signer签署3个块
 
 # header结构
-1. difficulty：1代表：；2代表
+1. difficulty：块难度（链会自动切换到难度最长的一条链）
+    * 1代表out-turn，当前块本应由另外一个signer签名
+    * 2代表in-turn，当前块应有该signer进行签名
 2. extraData：额外数据，含signer的签名数据
+    * 在创世块及checkpoint时，前32及后65个字节为任意数据，中间为singer地址
+    * 普通块时，前32个字节为miner自定义内容，后65个字节为singer的签名，中间的数据未做处理
 3. gasLimit：当前块的gas限制，同pow
 4. gasUsed：使用的gas数量，同pow
 5. hash：该块hash，同pow
@@ -79,7 +83,7 @@ POA是一个基于许可的共识算法，只有经过认证的地址(signer)才
 14. size：块大小，同pow
 15. stateRoot：同pow
 16. timestamp：出块时间，>=parentBlock.timestamp+BLOCK_PERIOD
-17. totalDifficulty：同pow，但基本无实际意义
+17. totalDifficulty：同pow
 18. transactions：同pow
 19. transactionsRoot：同pow
 20. uncles：应该始终为空数组[]
@@ -251,10 +255,10 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, stop <-ch
 # POA投票
 * signer调用Propose(address, auth)，发起对某个地址的投票，auth为false代表将该地址移除，auth为true代表将某个
 地址加入
-* 不要尝试添加已有的地址，添加已有的地址，或者是删除不是singer的地址均属于不合法的投票，在实际进行投票计算时，不会将
+* 不要尝试添加已有的地址；添加已有的地址，或者是删除不是singer的地址均属于不合法的投票，在实际进行投票计算时，不会将
 该部分的投票计算入内。
-* poa并没有对signer的投票地址进行限制，即你可以给自己投票，但是结果需要统计所有人的投票才能得出
+* poa并没有对signer的投票地址进行限制，即你可以给自己投票，但是结果需要统计所有人的投票才能得出（包括自己将自己移除）
 * 投票后的propose并不是直接被删除，如果没有使用discard或停止/重启节点，该部分数据会一直在内存中
 * 当signer只有一个时，signer可以自己将自己投票出去，使signer长度为0，此时系统会panic
-* 投票的情况会记录到块头部，并依此更新内存中的snapshot（在块为0或者内部检查点时(1024块间隔)，会将数据保存至disk）
+* 投票的情况会记录到块头部，并依此更新内存中的snapshot，所以当前的signer信息是保存在内存中的（在块为0或者内部检查点时(1024块间隔)，会将数据保存至disk）
 
