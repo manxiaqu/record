@@ -50,6 +50,11 @@
 * [以太坊分片技术](https://blockgeeks.com/guides/what-are-ethereum-nodes-and-sharding/)
 * [以太坊分片技术实现细节](https://github.com/ethereum/sharding/blob/develop/docs/doc.md)
 
+### 各类共识算法
+
+* [Casper Ethereum](https://arxiv.org/pdf/1710.09437.pdf)
+* [Dpos-bft Eos](https://medium.com/eosio/dpos-bft-pipelined-byzantine-fault-tolerance-8a0634a270ba)
+
 ### 硬钱包
 * [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 * [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
