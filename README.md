@@ -1,9 +1,14 @@
+
 # Go语言 以太坊 区块链相关文档及教程
+
 以太坊，solidity，go及区块链相关技术的教程和事件
+
 # GO语言
+
 * [常见问题](./go/go_zh.md)
 
 # Ethereum以太坊
+
 * [搭建以太坊私链（pow）](./ethereum/how_to_build_private_net_zh.md)  
 * [pow 共识算法](./ethereum/pow_zh.md)  
 * [以太坊智能合约安全事件](./ethereum/security_incident_zh.md)
@@ -14,9 +19,11 @@
 * [POA算法详解](./ethereum/poa_zh.md)
 
 # Solidity
+
 * [向其他地址/合约发送eth](./solidity/send_eth_zh.md)
 
 # Ethernaut游戏
+
 * [Hello Ethernaut](./ethernaut/0_Hello_Ethernaut_zh.md)
 * [Fallback](./ethernaut/1_Fallback_zh.md)
 * [Fallout](./ethernaut/2_Fallout_zh.md)
@@ -35,9 +42,11 @@
 * [Naught Coin](./ethernaut/15_Naught_Coin_zh.md)
 
 # 各类资料收集(原链接)
+
 在网上收集的各类资料原文链接
 
 ### 以太坊
+
 * [POA 协议](https://github.com/ethereum/EIPs/issues/225)
 * [Read Storage At Ethereum Contract](https://medium.com/aigang-network/how-to-read-ethereum-contract-storage-44252c8af925)
 * [Ethereum Libraries](https://github.com/Modular-Network/ethereum-libraries)
@@ -54,12 +63,15 @@
 
 * [Casper Ethereum](https://arxiv.org/pdf/1710.09437.pdf)
 * [Dpos-bft Eos](https://medium.com/eosio/dpos-bft-pipelined-byzantine-fault-tolerance-8a0634a270ba)
+* [dpos-consensus-algorithm-this-missing-white-paper](https://steemit.com/dpos/@dantheman/dpos-consensus-algorithm-this-missing-white-paper)
 
 ### 硬钱包
+
 * [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 * [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
 
 # 声明
+
 1. 欢迎指出错误及遗漏！
 2. 如说明与官方文档有任何冲突，请以官方文档为准！
 
