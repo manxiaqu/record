@@ -50,7 +50,6 @@
 * [POA 协议](https://github.com/ethereum/EIPs/issues/225)
 * [Read Storage At Ethereum Contract](https://medium.com/aigang-network/how-to-read-ethereum-contract-storage-44252c8af925)
 * [Ethereum Libraries](https://github.com/Modular-Network/ethereum-libraries)
-* [安全编写合约](https://github.com/ConsenSys/smart-contract-best-practices/blob/master/README-zh.md)
 * [Geth 快同步的细节](https://github.com/ethereum/go-ethereum/issues/15001)
 * [Infura以太坊免费节点](https://infura.io)
 * [以太坊浏览器](https://etherscan.io)
@@ -58,6 +57,12 @@
 * [以太坊合约安全WIKI](https://github.com/ethereum/wiki/wiki/Safety)
 * [以太坊分片技术](https://blockgeeks.com/guides/what-are-ethereum-nodes-and-sharding/)
 * [以太坊分片技术实现细节](https://github.com/ethereum/sharding/blob/develop/docs/doc.md)
+
+### Solidity
+
+* [官方文档](http://solidity.readthedocs.io/en/v0.4.24/)
+* [smart-contract-best-practices](https://github.com/ConsenSys/smart-contract-best-practices/blob/master/README-zh.md)
+* [openzeppelin-solidity](https://github.com/OpenZeppelin/openzeppelin-solidity)
 
 ### 各类共识算法
 
