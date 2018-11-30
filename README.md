@@ -39,6 +39,10 @@
 * [Gatekeep two](./ethernaut/14_Gatekeep_two_zh.md)
 * [Naught Coin](./ethernaut/15_Naught_Coin_zh.md)
 
+## 共识
+
+* [Raft算法简介](./consensus/raft_cn.md)
+
 # 各类资料收集(原链接)
 
 在网上收集的各类资料原文链接，请注意大部分需要科学上网。
@@ -72,6 +76,7 @@
 * [Dpos-bft Eos](https://medium.com/eosio/dpos-bft-pipelined-byzantine-fault-tolerance-8a0634a270ba)
 * [dpos-consensus-algorithm-this-missing-white-paper](https://steemit.com/dpos/@dantheman/dpos-consensus-algorithm-this-missing-white-paper)
 * [eos some issue](https://github.com/EOSIO/eos/issues/2718)
+* [In Search of an Understandable Consensus Algorithm(raft)](https://ramcloud.stanford.edu/raft.pdf)
 
 ## 硬钱包
 
