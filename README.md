@@ -88,6 +88,7 @@
 ## GO语言
 
 * [常见问题](./go/go_zh.md)
+* [GC](https://blog.golang.org/ismmkeynote)
 
 # 声明
 
