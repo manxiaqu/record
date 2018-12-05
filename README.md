@@ -89,6 +89,8 @@
 
 * [常见问题](./go/go_zh.md)
 * [GC](https://blog.golang.org/ismmkeynote)
+* [Go-slice-question](https://forum.golangbridge.org/t/how-does-golang-handle-slices-in-variables/11656/2)
+* [Go-slice-blog-official](https://blog.golang.org/go-slices-usage-and-internals)
 
 # 声明
 
