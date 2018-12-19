@@ -233,40 +233,40 @@ void system_contract::unregprod( const account_name producer ) {
 
 ## 链/块
 
-#### 块头部
+### 块头部
 
-块头部中包含的信息（blockHeader）：
-1. timestamp:时间戳
-2. account_name:块生产者
-3. confirmed：该块的确认数目(默认为1)
+#### blockHeader(块头部中包含的信息)
+
+* timestamp:时间戳
+* account_name:块生产者
+* confirmed：该块的确认数目(默认为1)
     * 块生产者通过对该块签名来确认[blockNum - confirmed, blockNum) 
     * 同一个范围（如：同一生产周期）中，每个producer只能
     * 生产者在某个块上生产块时，即至少为对前一个块的确认；其只能确认之前的块，并不能对自己生产的块进行“确认”
-4. transaction_mroot：交易梅克尔树
-5. action_mroot：行为梅克尔树
-6. schedule_version：应该验证该块的生产者序列版本；上个块中包含了新的生产者（new_producers->version）被
-   视为不可逆转的块，并且该块应该由新的块生产者来进行验证。
-7. new_producers：新的生产者序列
-8. header_extensions：
-9. digest：
-10. id：块id
-    组成方式:sha3.hash(block)+"0xffffffff00000000"+blockNum
-11. blockNum：块高度
-12. numFromID：
+* transaction_mroot：交易梅克尔树
+* action_mroot：行为梅克尔树
+* schedule_version：应该验证该块的生产者序列版本；上个块中包含了新的生产者（new_producers->version）被
+视为不可逆转的块，并且该块应该由新的块生产者来进行验证。
+* new_producers：新的生产者序列
+* header_extensions：
+* digest：
+* id：块id，组成方式为sha3.hash(block)+"0xffffffff00000000"+blockNum
+* blockNum：块高度
+* numFromID：
 
-签名后的块头部（signedBlockHeader）：
-1. producer_signature：生产者的签名
+#### signedBlockHeader(签名后的块头部)
 
-头部确认：
-1. blockID：块id
-2. producer：块生产者
-3. producer_signature：签名数据
+* producer_signature：生产者的签名
+* blockID：块id
+* producer：块生产者
+* producer_signature：签名数据
 
-blockHeaderState：
-1. id：blockID
-2. blockNum：块高度
-3. header：签名后的signedBlockHeader
-4. dpos_proposed_irreversible_blocknum:
-5. dpos_irreversible_blocknum:
-6. bft_irreversible_blocknum:
-7. pending_schedule_lib_num:
+#### blockHeaderState
+
+* id：blockID
+* blockNum：块高度
+* header：签名后的signedBlockHeader
+* dpos_proposed_irreversible_blocknum:
+* dpos_irreversible_blocknum:
+* bft_irreversible_blocknum:
+* pending_schedule_lib_num:
