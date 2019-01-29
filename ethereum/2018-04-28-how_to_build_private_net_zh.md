@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 搭建以太坊私链
+tags: [ethereum]
 ---
 
 # 搭建以太坊私链/运行智能合约

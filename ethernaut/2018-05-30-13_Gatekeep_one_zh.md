@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Gatekeep one
+tags: [ethernaut]
 ---
 
 # Gatekeep one

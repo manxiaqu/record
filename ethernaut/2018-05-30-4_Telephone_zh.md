@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Telephone
+tags: [ethernaut]
 ---
 
 # Telephone

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Dpos-bft EOS
+tags: [consensus]
 ---
 
 # Dpos-bft EOS

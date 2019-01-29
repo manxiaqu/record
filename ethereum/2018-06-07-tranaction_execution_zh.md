@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 以太坊交易执行流程
+tags: [ethereum]
 ---
 
 # 以太坊交易执行流程

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Hello Ethernaut
+tags: [ethernaut]
 ---
 
 # Hello Ethernaut

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 以太坊数据结构
+tags: [ethereum]
 ---
 
 # 以太坊交易、块头部等数据结构分析

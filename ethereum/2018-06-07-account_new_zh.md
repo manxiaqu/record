@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 以太坊账户生成
+tags: [ethereum]
 ---
 
 # 以太坊新账户生成

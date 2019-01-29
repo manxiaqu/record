@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Send Ether
+tags: [solidity]
 ---
 
 # How To Send Ether To Other Address On Contract

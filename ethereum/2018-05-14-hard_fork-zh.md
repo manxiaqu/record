@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 以太坊硬分叉
+tags: [ethereum]
 ---
 
 # Hard Fork

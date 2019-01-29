@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 以太坊安全事件
+tags: [ethereum]
 ---
 
 # 以太坊智能合约安全事件记录

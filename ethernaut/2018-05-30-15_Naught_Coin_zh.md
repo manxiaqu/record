@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Naught Coin
+tags: [ethernaut]
 ---
 
 # Naught Coin

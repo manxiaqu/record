@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Fallback
+tags: [ethernaut]
 ---
 
 # Fallback

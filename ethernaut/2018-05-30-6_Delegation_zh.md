@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Delegation
+tags: [ethernaut]
 ---
 
 # Delegation

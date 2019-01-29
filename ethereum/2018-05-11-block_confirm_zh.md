@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 块确认
+tags: [ethereum]
 ---
 
 # 块确认

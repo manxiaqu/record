@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Gatekeeper two
+tags: [ethernaut]
 ---
 
 # Gatekeeper two

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Coin Flip
+tags: [ethernaut]
 ---
 
 # Coin Flip
