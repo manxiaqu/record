@@ -1,8 +1,7 @@
 # Summary
 
 * [简介](README.md)
-
-* [以太坊]()
+* 以太坊
     * [创建账户](ethereum/Account_new_zh.md)
     * [块确认](ethereum/block_confirm_zh.md)
     * [数据结构](ethereum/data_structure.md)
@@ -14,7 +13,6 @@
     * [安全事件](ethereum/security_incident_zh.md)
     * [交易执行](ethereum/Transaction_execution_zh.md)
     * [交易池](ethereum/txpool_zh.md)
-
 * [以太坊攻防游戏ethernaut](ethernaut/README.md)
     * [Hello](ethernaut/0_Hello_Ethernaut_zh.md)
     * [Fallback](ethernaut/1_Fallback_zh.md)
@@ -32,11 +30,9 @@
     * [Gatekeep_one](ethernaut/13_Gatekeep_one_zh.md)
     * [Gatekeep_two](ethernaut/14_Gatekeep_two_zh.md)
     * [Naught_coin](ethernaut/15_Naught_Coin_zh.md)
-
-* [solidity]()
+* solidity
     * [发送eth](solidity/send_eth_zh.md)
-
-* [共识]()
+* 共识
     * [EOS共识算法dpos-bft](consensus/dpos_bft_zh.md)
     * [Raft一致性共识算法](consensus/raft_cn.md)
 
